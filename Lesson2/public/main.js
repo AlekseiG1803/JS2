@@ -1,12 +1,231 @@
-class List {
-    items = []
+class GoodItem {
+    name = ''
+    price = 0
+    count = 1
 
-    constructor () {
+
+    constructor ({name, price}) {
+        this.name = name
+        this.price = price
+    }
+
+    inc () {
+        this.count++
+    }
+
+    dec () {
+        this.count--
+    }
+
+    getBuyBtn () {
+        const btnBuy = document.createElement('div')
+        btnBuy.classList.add('btnBuy')
+        btnBuy.innerHTML = 'Купить!'
+
+        btnBuy.addEventListener('click', () => {
+            const CartInstance = new Cart()
+            CartInstance.add(this)
+            console.log(CartInstance)
+        })
+
+        return btnBuy
+    }
+
+    getPlusBtn () {
+        const btnPlus = document.createElement('div')
+        btnPlus.classList.add('btnPlus')
+        btnPlus.innerHTML = '+'
+      
+        btnPlus.addEventListener('click', () => {
+            const CartInstance = new Cart()
+            CartInstance.add(this)
+            console.log(CartInstance)
+    })
+
+        return btnPlus
+    }
+
+    getMinusBtn () {
+        const btnMinus = document.createElement('div')
+        btnMinus.classList.add('btnMinus')
+        btnMinus.innerHTML = '-'
+
+        btnMinus.addEventListener('click', () => {
+            const CartInstance = new Cart()
+            CartInstance.remove(this)
+            console.log(CartInstance)
+        })
+
+        return btnMinus
+    }
+
+    getTemplate () {
+        const { name, price, count } = this
+        const wrapper = document.createElement('div')
+        wrapper.innerHTML = `
+        <div class="good">
+            <div class="good_name">Товар: <span>${name}</span></div> 
+            <div class="good_price">Цена: <span>${price}</span></div>
+        </div>`
+        wrapper.appendChild(this.getBuyBtn())
+
+        return wrapper
+    }
+
+    getCartTemplate () {
+        const { name, price, count } = this
+        const wrapper = document.createElement('div')
+        wrapper.innerHTML = `
+        <div class="cart_item">
+            <div class="cart_name">Товар: <span>${name}</span></div> 
+            <div class="cart_price">Цена: <span>${price}</span></div>
+            <div class="cart_price">В корзине: <span>${count}</span> шт. на <span>${count*price}</span> руб.</div>
+        </div>`
+        wrapper.appendChild(this.getPlusBtn())
+        wrapper.appendChild(this.getMinusBtn())
+
+        return wrapper
+    }
+    
+ 
+}
+
+class List {
+    
+    items =[]
+
+    constructor (items = []) {
+        this.items = items
+    }
+
+    findGood (good) {
+        return this.items.filter(item => item.name === good.name)[0]
+    }
+
+    add (item) {
+        const exists = this.findGood(item)
+        if (exists) {
+            exists.inc()
+        } 
+        else {
+            this.items.push(item)
+            
+        }
+        this.render()
+    }
+
+    remove (item) {
+        const exists = this.findGood(item)
+
+        if (!exists) {
+            return
+        }
+
+        if (exists.count > 1) {
+            exists.dec()
+        } 
+        else {
+            this.items = this.items.filter(good => item.name !== good.name)
+            
+        }
+        this.render()
+    }
+
+    render() {
+
+    }
+
+}
+
+
+class Cart extends List {
+
+    constructor (items) {
+        if (Cart._Instance) {
+            return Cart._Instance
+        }
+
+        super(items)
+        this.init()
+
+        Cart._Instance = this
+
+    }
+
+     init () {
+        const block = document.createElement('div')
+        block.classList.add('cart')
+
+        const btnCartInit = document.createElement('div')
+        btnCartInit.innerHTML = `Корзина`
+        btnCartInit.classList.add('cart_btnInit')
+
+        const list = document.createElement('div')
+        list.innerHTML = 'Корзина пуста'
+        list.classList.add('cart_list')
+
+        btnCartInit.addEventListener('click', () => {
+            list.classList.toggle('shown')
+        })
+
+        block.appendChild(btnCartInit)
+
+        block.appendChild(list)
+        
+
+        const placeToRender = document.querySelector('header')
+        
+        if (placeToRender) {
+            placeToRender.appendChild(block)
+        }
+    }
+
+    // getTotalPriceTemplate () {
+    //     const  totalPrice = this.items.reduce((result, item) => {
+    //             return result + item.price * item.counter
+    //     }, 0)
+
+    //     console.log(totalPrice)
+
+    //     const block = document.createElement('div')
+    //     block.classList.add('cart_sum')
+    //     block.innerHTML = `Cтоимость корзины: ${totalPrice} руб.`
+
+    //     return block
+     
+    // }
+
+    render () {
+        const placeToRender = document.querySelector('.cart_list')
+
+        if (!placeToRender) {
+            return
+        } 
+
+        placeToRender.innerHTML = ''
+
+        this.items.forEach(item => {
+            const template = item.getCartTemplate()
+            placeToRender.appendChild(template)
+        })
+
+        // placeToRender.appendChild(this.getTotalPriceTemplate())
+    }
+
+}
+
+
+class GoodsList extends List {
+
+    constructor (items) {
+        super(items)
+
         let goods = this.fetchGoods()
         goods = goods.map(cur => {
             return new GoodItem(cur)
         })
         this.items.push(...goods)
+
         this.render()
     }
 
@@ -21,128 +240,20 @@ class List {
     }
 
     render () {
-        this.items.forEach(good => {
-            good.render()
+        const placeToRender = document.querySelector('.goods-list')
+
+        if (!placeToRender) {
+            return
+        } 
+
+        this.items.forEach(item => {
+            const template = item.getTemplate()
+            placeToRender.appendChild(template)
         })
     }
-
+    
 }
 
-class GoodItem {
-    name = ' '
-    price = 0
-    counter = 0
-    inCart = false
+const GoodsListInstanse = new GoodsList()
 
-    constructor ({ name, price }) {
-        this.name = name
-        this.price = price
-    }
-
-    onBtnBuyClicked () {
-        this.inCart = true
-        this.counter = this.counter + 1
-        this.render()
-
-    }
-
-    createButtonBuy () {
-        const btnBuy = document.createElement('a')
-        btnBuy.classList.add('btnBuy')
-        btnBuy.innerHTML = 'В корзину!'
-
-        btnBuy.addEventListener('click', this.onBtnBuyClicked.bind(this))
-
-        return btnBuy
-    }
-
-    onBtnPlusClicked () {
-        this.counter = this.counter + 1
-        this.render()
-    }
-
-    createButtonPlus () {
-        const btnPlus = document.createElement('a')
-        btnPlus.classList.add('btnPlus')
-        btnPlus.innerHTML = '+'
-
-        btnPlus.addEventListener('click', this.onBtnPlusClicked.bind(this))
-
-        return btnPlus
-    }
-
-    onBtnMinusClicked () {
-        if (this.counter > 1){
-            this.counter = this.counter - 1
-            this.render()
-        } else {
-            this.inCart = false
-        }
-     
-    }
-
-    createButtonMinus () {
-        const btnMinus = document.createElement('a')
-        btnMinus.classList.add('btnMinus')
-        btnMinus.innerHTML = '-'
-
-        btnMinus.addEventListener('click', this.onBtnMinusClicked.bind(this))
-
-        return btnMinus
-    }
-
-
-
-    render () {
-
-        let itemName = document.createElement('div')
-        let itemPrice = document.createElement('div')
-        let itemCounter = document.createElement('div') 
-        let itemBtnBuy = document.createElement('a')
-        let itemBtnPlus = document.createElement('a')
-        let itemBtnMinus = document.createElement('a')
-
-        itemName.innerText = `Товар: ${this.name}`
-        itemPrice.innerText = `Цена: ${this.price}`
-        itemCounter.innerText = `В корзине ${this.counter} шт.`
-        itemBtnBuy = this.createButtonBuy()
-        itemBtnPlus = this.createButtonPlus()
-        itemBtnMinus = this.createButtonMinus()
-
-        itemName.classList.add('GoodsName')
-        itemPrice.classList.add('GoodsPrice')
-        itemCounter.classList.add('GoodsCounter')
-        itemBtnBuy.classList.add('btnBuy')
-        itemBtnPlus.classList.add('btnBuy')
-        itemBtnMinus.classList.add('btnBuy')
-
-        if (!this.inCart) {
-            const placeToRender = document.querySelector('.goods-list')
-
-            if (placeToRender) {
-
-                placeToRender.appendChild(itemName)
-                placeToRender.appendChild(itemPrice)
-                placeToRender.appendChild(itemCounter)
-                placeToRender.appendChild(itemBtnBuy)
-
-            }
-        } else {
-            const placeToRender = document.querySelector('.cart')
-
-            if (placeToRender) {
-
-                placeToRender.appendChild(itemName)
-                placeToRender.appendChild(itemPrice)
-                placeToRender.appendChild(itemCounter)
-                placeToRender.appendChild(itemBtnPlus)
-                placeToRender.appendChild(itemBtnMinus)
-
-            }
-        }
-    }
-}
-
-
-
-const ListInstance = new List()
+const CartInstanse = new Cart()

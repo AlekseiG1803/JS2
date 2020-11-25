@@ -1,6 +1,17 @@
 body {
     width: 900px;
 }
+
+header {
+    background-color: palegoldenrod;
+    border: 1px solid black;
+    box-sizing: border-box;
+    font-size: 20px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+
+}
 .goods-list {
     margin: 0 auto;
     width: 100%;
@@ -9,14 +20,28 @@ body {
 }
 
 .cart {
-    margin: 0 auto;
-    width: 100%;
+    /* margin: 0 auto; */
+    width: auto;
     box-sizing: border-box;
     border: 1px solid black;
     background-color: burlywood;
 }
 
-.btnBuy {
+.good {
+    margin: 10px;
+    border: 1px solid olivedrab;
+
+}
+
+.cart_list {
+    display: none;
+}
+
+.cart_list.shown {
+    display: block;
+}
+
+.btnBuy, .cart_btnInit, .btnPlus, .btnMinus  {
     display: inline-block;
     width: 100px;
     margin: 10px;
@@ -27,8 +52,4 @@ body {
     outline: none;
     background-color: grey;
     color: honeydew;
-}
-
-.box {
-    text-align: center;
 }
